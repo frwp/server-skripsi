@@ -53,7 +53,7 @@ func main() {
 
 	ctx := context.Background()
 	server := &http.Server{
-		Addr:    ":80",
+		Addr:    ":8080",
 		Handler: mux,
 		BaseContext: func(_ net.Listener) context.Context {
 			ctx = context.WithValue(ctx, "db", client)

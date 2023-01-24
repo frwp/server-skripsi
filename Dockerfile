@@ -9,4 +9,6 @@ COPY . .
 RUN go build -v -o /usr/local/bin/app ./...
 RUN mkdir logs
 
+EXPOSE 8080
+
 CMD [ "app" ]
