@@ -17,6 +17,8 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type key string
+
 func main() {
 
 	startTime := time.Now().Local().String()
@@ -51,13 +53,16 @@ func main() {
 	mux.HandleFunc("/", getRoot)
 	mux.HandleFunc("/api", postSensorData)
 
+	var db key = "db"
+	var write key = "writeApi"
+
 	ctx := context.Background()
 	server := &http.Server{
 		Addr:    ":8080",
 		Handler: mux,
 		BaseContext: func(_ net.Listener) context.Context {
-			ctx = context.WithValue(ctx, "db", client)
-			ctx = context.WithValue(ctx, "writeApi", writeApi)
+			ctx = context.WithValue(ctx, db, client)
+			ctx = context.WithValue(ctx, write, writeApi)
 			return ctx
 		},
 	}
@@ -96,7 +101,7 @@ func postSensorData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	writeApi := ctx.Value("writeApi").(api.WriteAPIBlocking)
+	writeApi := ctx.Value(key("writeApi")).(api.WriteAPIBlocking)
 
 	if err := r.ParseForm(); err != nil {
 		log.Printf("Error parsing form: %v", err)
