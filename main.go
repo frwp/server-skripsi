@@ -128,6 +128,8 @@ func postSensorData(w http.ResponseWriter, r *http.Request) {
 	y, _ = strconv.ParseFloat(acc[1], 64)
 	z, _ = strconv.ParseFloat(acc[2], 64)
 
+	log.Printf("Node: %s, Timestamp: %d, Humidity: %f, Temperature: %f, Accelerometer: %f, %f, %f\n", node, timestamp, hum, temp, x, y, z)
+
 	p1 := influxdb2.NewPointWithMeasurement("air").
 		AddTag("location", node).
 		AddField("humidity", hum).
