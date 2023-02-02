@@ -90,12 +90,9 @@ func getRoot(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Welcome"))
 }
 
-func parseData(w http.ResponseWriter, data string) (timestamp int64, hum float64, temp float64, x float64, y float64, z float64, err error) {
+func parseData(data string) (timestamp int64, hum float64, temp float64, x float64, y float64, z float64, err error) {
 	defer func() {
 		if recover() != nil {
-			log.Println("Error parsing data")
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("500 - Bad request data"))
 			err = errors.New("error parsing data")
 		}
 	}()
@@ -142,9 +139,12 @@ func postSensorData(w http.ResponseWriter, r *http.Request) {
 
 	data = replacer.Replace(data)
 
-	var timestamp, hum, temp, x, y, z, err = parseData(w, data)
+	var timestamp, hum, temp, x, y, z, err = parseData(data)
 
 	if err != nil {
+		log.Printf("Error: %s\n", err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - Bad request data"))
 		return
 	}
 
