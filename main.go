@@ -90,6 +90,31 @@ func getRoot(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Welcome"))
 }
 
+func parseData(w http.ResponseWriter, data string) (timestamp int64, hum float64, temp float64, x float64, y float64, z float64, err error) {
+	defer func() {
+		if recover() != nil {
+			log.Println("Error parsing data")
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Bad request data"))
+			err = errors.New("error parsing data")
+		}
+	}()
+
+	log.Printf("incoming data: %s\n", data)
+	bodyArr := strings.Split(data, "|")
+	timestamp, _ = strconv.ParseInt(bodyArr[0], 10, 64)
+	hum, _ = strconv.ParseFloat(bodyArr[1], 64)
+	temp, _ = strconv.ParseFloat(bodyArr[2], 64)
+	acc := strings.Split(bodyArr[3], ",")
+	x, _ = strconv.ParseFloat(acc[0], 64)
+	y, _ = strconv.ParseFloat(acc[1], 64)
+	z, _ = strconv.ParseFloat(acc[2], 64)
+
+	log.Printf("Timestamp: %d, Humidity: %f, Temperature: %f, Accelerometer: %f, %f, %f\n", timestamp, hum, temp, x, y, z)
+
+	return timestamp, hum, temp, x, y, z, nil
+}
+
 func postSensorData(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/api" {
 		http.Error(w, "404 not found.", http.StatusNotFound)
@@ -117,18 +142,11 @@ func postSensorData(w http.ResponseWriter, r *http.Request) {
 
 	data = replacer.Replace(data)
 
-	var hum, temp, x, y, z float64
-	var timestamp int64
-	bodyArr := strings.Split(data, "|")
-	timestamp, _ = strconv.ParseInt(bodyArr[0], 10, 64)
-	hum, _ = strconv.ParseFloat(bodyArr[1], 64)
-	temp, _ = strconv.ParseFloat(bodyArr[2], 64)
-	acc := strings.Split(bodyArr[3], ",")
-	x, _ = strconv.ParseFloat(acc[0], 64)
-	y, _ = strconv.ParseFloat(acc[1], 64)
-	z, _ = strconv.ParseFloat(acc[2], 64)
+	var timestamp, hum, temp, x, y, z, err = parseData(w, data)
 
-	log.Printf("Node: %s, Timestamp: %d, Humidity: %f, Temperature: %f, Accelerometer: %f, %f, %f\n", node, timestamp, hum, temp, x, y, z)
+	if err != nil {
+		return
+	}
 
 	p1 := influxdb2.NewPointWithMeasurement("air").
 		AddTag("location", node).
@@ -150,6 +168,7 @@ func postSensorData(w http.ResponseWriter, r *http.Request) {
 	if msg, err := json.Marshal(map[string]string{"status": "ok"}); err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Something bad happened!"))
 	} else {
 		w.Write(msg)
 	}
