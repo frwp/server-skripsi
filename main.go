@@ -131,6 +131,7 @@ func postSensorData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println(r.Header)
 	log.Print(r.Form)
 	log.Print(io.ReadAll(r.Body))
 
