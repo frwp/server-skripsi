@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io"
 	"log"
 	"net"
 	"net/http"
@@ -127,17 +126,22 @@ func postSensorData(w http.ResponseWriter, r *http.Request) {
 	writeApi := ctx.Value(key("writeApi")).(api.WriteAPIBlocking)
 
 	log.Println(r.Header)
-	log.Print(io.ReadAll(r.Body))
+
+	var data, node string
 
 	if err := r.ParseForm(); err != nil {
-		log.Printf("Error parsing form: %v", err)
-		return
+		if r.Body == nil {
+			log.Printf("Error parsing form: %v", err)
+			return
+		}
+		r.ParseMultipartForm(r.ContentLength)
+		data = r.MultipartForm.Value["data"][0]
+		node = r.MultipartForm.Value["node"][0]
+	} else {
+		data = r.FormValue("data")
+		node = r.FormValue("node")
 	}
 
-	log.Print(r.Form)
-
-	data := r.FormValue("data")
-	node := r.FormValue("node")
 	if node == "" {
 		node = "unknown"
 	}
