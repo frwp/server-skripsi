@@ -142,6 +142,9 @@ func postSensorData(w http.ResponseWriter, r *http.Request) {
 		node = r.FormValue("node")
 	}
 
+	log.Println(data)
+	log.Println(node)
+
 	if node == "" {
 		node = "unknown"
 	}
