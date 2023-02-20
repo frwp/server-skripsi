@@ -136,7 +136,10 @@ func postSensorData(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Print("Body: ")
 		log.Println(r.Body)
-		r.ParseMultipartForm(r.ContentLength)
+		if err = r.ParseMultipartForm(r.ContentLength); err != nil {
+			log.Printf("Error parsing multipart form: %v", err)
+			return
+		}
 		log.Print("MultipartForm: ")
 		log.Println(r.MultipartForm)
 		data = r.MultipartForm.Value["data"][0]
