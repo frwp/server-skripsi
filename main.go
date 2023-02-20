@@ -136,6 +136,7 @@ func postSensorData(w http.ResponseWriter, r *http.Request) {
 		}
 		r.ParseMultipartForm(r.ContentLength)
 		log.Println(r.MultipartForm)
+		log.Println(r.Body)
 		data = r.MultipartForm.Value["data"][0]
 		node = r.MultipartForm.Value["node"][0]
 	} else {
