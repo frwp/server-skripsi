@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -129,6 +130,9 @@ func postSensorData(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error parsing form: %v", err)
 		return
 	}
+
+	log.Print(r.Form)
+	log.Print(io.ReadAll(r.Body))
 
 	data := r.FormValue("data")
 	node := r.FormValue("node")
