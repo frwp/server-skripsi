@@ -126,14 +126,15 @@ func postSensorData(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	writeApi := ctx.Value(key("writeApi")).(api.WriteAPIBlocking)
 
+	log.Println(r.Header)
+	log.Print(io.ReadAll(r.Body))
+
 	if err := r.ParseForm(); err != nil {
 		log.Printf("Error parsing form: %v", err)
 		return
 	}
 
-	log.Println(r.Header)
 	log.Print(r.Form)
-	log.Print(io.ReadAll(r.Body))
 
 	data := r.FormValue("data")
 	node := r.FormValue("node")
